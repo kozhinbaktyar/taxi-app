@@ -1,170 +1,562 @@
 <!DOCTYPE html>
-<html lang="ku" dir="rtl">
+<html lang="ckb" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ئەپی شۆفێر</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Unikurd+Web&display=swap');
-        body { font-family: 'Unikurd Web', sans-serif; background-color: #f8fafc; }
-        .hidden { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پانێلی بەڕێوەبردن - تاکسی</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --card:#1a2235;
+    --border:#1e2d45; --accent:#f59e0b; --accent2:#10b981;
+    --danger:#ef4444; --info:#38bdf8; --text:#e2e8f0;
+    --muted:#64748b; --input-bg:#0f172a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Naskh Arabic',serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  .sidebar{
+    position:fixed;right:0;top:0;width:240px;height:100vh;
+    background:var(--surface);border-left:1px solid var(--border);
+    display:flex;flex-direction:column;z-index:100;
+  }
+  .logo{
+    padding:24px 20px;border-bottom:1px solid var(--border);
+    font-size:20px;font-weight:700;color:var(--accent);
+    display:flex;align-items:center;gap:10px;
+  }
+  .logo span{font-size:28px;}
+  .nav{flex:1;padding:16px 0;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 20px;cursor:pointer;color:var(--muted);
+    transition:all .2s;font-size:15px;border-right:3px solid transparent;
+  }
+  .nav-item:hover,.nav-item.active{
+    color:var(--text);background:rgba(245,158,11,.08);border-right-color:var(--accent);
+  }
+  .nav-item .icon{font-size:18px;width:22px;text-align:center;}
+
+  .main{margin-right:240px;padding:32px;}
+  .page-header{margin-bottom:28px;}
+  .page-title{font-size:26px;font-weight:700;}
+  .page-sub{color:var(--muted);font-size:14px;margin-top:4px;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .stat-label{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .stat-value{font-size:28px;font-weight:700;}
+  .stat-value.gold{color:var(--accent);}
+  .stat-value.green{color:var(--accent2);}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+  .card-header{
+    padding:16px 20px;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .card-title{font-size:16px;font-weight:600;}
+
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px;}
+  .form-group{display:flex;flex-direction:column;gap:6px;}
+  .form-group label{font-size:13px;color:var(--muted);}
+  .form-group input,.form-group select{
+    background:var(--input-bg);border:1px solid var(--border);
+    border-radius:8px;padding:10px 14px;color:var(--text);
+    font-family:inherit;font-size:14px;transition:border-color .2s;
+  }
+  .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);}
+  .form-group select option{background:var(--input-bg);}
+
+  .btn{
+    padding:10px 22px;border-radius:8px;border:none;
+    font-family:inherit;font-size:14px;cursor:pointer;font-weight:600;transition:all .2s;
+  }
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-primary:hover{background:#d97706;}
+  .btn-success{background:var(--accent2);color:#fff;}
+  .btn-success:hover{background:#059669;}
+  .btn-danger{background:var(--danger);color:#fff;}
+  .btn-sm{padding:6px 14px;font-size:13px;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  th{
+    background:var(--surface);padding:12px 16px;
+    text-align:right;font-size:13px;color:var(--muted);
+    font-weight:500;border-bottom:1px solid var(--border);
+  }
+  td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:14px;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+  .badge-green{background:rgba(16,185,129,.15);color:var(--accent2);}
+  .badge-red{background:rgba(239,68,68,.15);color:var(--danger);}
+  .badge-yellow{background:rgba(245,158,11,.15);color:var(--accent);}
+  .badge-info{background:rgba(56,189,248,.15);color:var(--info);}
+
+  .balance-form{display:flex;gap:10px;align-items:flex-end;padding:20px;flex-wrap:wrap;}
+  .balance-form .form-group{flex:1;min-width:160px;}
+
+  .section{display:none;}
+  .section.active{display:block;}
+
+  .toast{
+    position:fixed;bottom:24px;left:24px;
+    color:#fff;padding:12px 20px;border-radius:10px;
+    font-size:14px;font-weight:600;opacity:0;transform:translateY(10px);
+    transition:all .3s;pointer-events:none;z-index:999;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  /* Pricing */
+  .price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px;}
+  .price-item{
+    background:var(--input-bg);border:1px solid var(--border);
+    border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;
+  }
+  .price-route{font-size:14px;font-weight:700;color:var(--accent);}
+  .price-item input{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:6px;padding:8px 10px;color:var(--text);
+    font-family:inherit;font-size:14px;width:100%;
+  }
+  .price-item input:focus{outline:none;border-color:var(--accent);}
+  .save-row{padding:0 20px 20px;display:flex;justify-content:flex-end;}
+
+  .info-box{
+    background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.2);
+    border-radius:10px;padding:12px 16px;margin:0 20px 16px;
+    font-size:13px;color:var(--info);line-height:1.7;
+  }
+</style>
 </head>
-<body class="p-4">
+<body>
 
-    <!-- بەشی لۆگین -->
-    <div id="login-section" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold text-center mb-6 text-blue-800">چوونەژوورەوەی شۆفێر</h2>
-        <input type="text" id="loginPhone" placeholder="ژمارەی مۆبایل" class="w-full p-3 border rounded-lg mb-4">
-        <input type="password" id="loginPass" placeholder="پاسۆرد" class="w-full p-3 border rounded-lg mb-4">
-        <button onclick="login()" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold">داخڵبوون</button>
+<div class="sidebar">
+  <div class="logo"><span>🚖</span> بەڕێوەبردن</div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showSection('dashboard',this)"><span class="icon">📊</span> داشبۆرد</div>
+    <div class="nav-item" onclick="showSection('drivers',this)"><span class="icon">🧑‍✈️</span> شۆفێرەکان</div>
+    <div class="nav-item" onclick="showSection('passengers',this)"><span class="icon">👥</span> سەرنیشینەکان</div>
+    <div class="nav-item" onclick="showSection('balance',this)"><span class="icon">💰</span> باڵانس</div>
+    <div class="nav-item" onclick="showSection('pricing',this)"><span class="icon">🏷️</span> نرخی هێڵەکان</div>
+    <div class="nav-item" onclick="showSection('reports',this)"><span class="icon">📋</span> ڕاپۆرت</div>
+  </nav>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="section active">
+    <div class="page-header">
+      <div class="page-title">داشبۆرد</div>
+      <div class="page-sub">وزپان و ئامارەکان</div>
     </div>
-
-    <!-- بەشی سەرەکی شۆفێر -->
-    <div id="main-section" class="hidden max-w-lg mx-auto">
-        <div class="flex justify-between items-center bg-blue-900 text-white p-4 rounded-t-lg">
-            <div>
-                <p id="driverName" class="font-bold"></p>
-                <p id="driverRoute" class="text-sm opacity-80"></p>
-            </div>
-            <div class="text-left">
-                <p class="text-xs">باڵنس</p>
-                <p id="driverBalance" class="font-bold text-green-400">0</p>
-            </div>
-        </div>
-
-        <h3 class="text-lg font-bold my-4">داواکارییە نوێیەکان</h3>
-        <div id="ordersList" class="space-y-4">
-            <!-- لێرە داواکارییەکان دەردەکەون -->
-        </div>
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">کۆی شۆفێرەکان</div><div class="stat-value gold" id="totalDrivers">0</div></div>
+      <div class="stat-card"><div class="stat-label">کۆی سەرنیشینەکان</div><div class="stat-value gold" id="totalPassengers">0</div></div>
+      <div class="stat-card"><div class="stat-label">کۆی گەشتەکان</div><div class="stat-value green" id="totalTrips">0</div></div>
+      <div class="stat-card"><div class="stat-label">داواکاری چاوەڕوان</div><div class="stat-value" id="pendingBookings" style="color:var(--accent)">0</div></div>
     </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">داواکاری دواینەکان</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>سەرنیشین</th><th>لە</th><th>بۆ</th><th>کات</th><th>دۆخ</th></tr></thead>
+          <tbody id="recentBookingsTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">زانیاری نییە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIVERS -->
+  <div id="drivers" class="section">
+    <div class="page-header"><div class="page-title">شۆفێرەکان</div></div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">زیادکردنی شۆفێری نوێ</div></div>
+      <div class="form-grid">
+        <div class="form-group"><label>ناو</label><input id="driverName" type="text" placeholder="ناوی شۆفێر"></div>
+        <div class="form-group"><label>ژمارەی مۆبایل</label><input id="driverPhone" type="text" placeholder="07xxxxxxxxx"></div>
+        <div class="form-group"><label>پاسۆرد</label><input id="driverPass" type="password" placeholder="پاسۆرد"></div>
+        <div class="form-group">
+          <label>هێڵ</label>
+          <select id="driverRoute">
+            <option value="">هێڵ هەڵبژێرە</option>
+            <option>بغداد</option><option>هەولێر</option><option>کەرکووک</option>
+            <option>ڕانیە</option><option>قەڵادزێ</option><option>چەمچەماڵ</option>
+            <option>دووز</option><option>کۆیە</option>
+          </select>
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn btn-primary" onclick="addDriver()">+ زیادکردن</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">لیستی شۆفێرەکان</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ناو</th><th>مۆبایل</th><th>هێڵ</th><th>گەشتەکان</th><th>باڵانس</th><th>کردار</th></tr></thead>
+          <tbody id="driversTable"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">هیچ شۆفێرێک نییە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSENGERS -->
+  <div id="passengers" class="section">
+    <div class="page-header"><div class="page-title">سەرنیشینەکان</div></div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">لیستی سەرنیشینەکان</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ناو</th><th>مۆبایل</th><th>بەرواری تۆمار</th><th>گەشت</th><th>باڵانس</th></tr></thead>
+          <tbody id="passengersTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">هیچ سەرنیشینێک نییە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BALANCE -->
+  <div id="balance" class="section">
+    <div class="page-header"><div class="page-title">بەڕێوەبردنی باڵانس</div></div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">💰 زیادکردنی باڵانس بۆ شۆفێر</div></div>
+      <div class="balance-form">
+        <div class="form-group"><label>ژمارەی مۆبایلی شۆفێر</label><input id="balPhone" type="text" placeholder="07xxxxxxxxx"></div>
+        <div class="form-group"><label>بڕی باڵانس (IQD)</label><input id="balAmount" type="number" placeholder="0" min="1"></div>
+        <div style="align-self:flex-end"><button class="btn btn-success" onclick="addBalance('driver')">زیادکردن ✓</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">💰 زیادکردنی باڵانس بۆ سەرنیشین</div></div>
+      <div class="balance-form">
+        <div class="form-group"><label>ژمارەی مۆبایلی سەرنیشین</label><input id="balPhoneP" type="text" placeholder="07xxxxxxxxx"></div>
+        <div class="form-group"><label>بڕی باڵانس (IQD)</label><input id="balAmountP" type="number" placeholder="0" min="1"></div>
+        <div style="align-self:flex-end"><button class="btn btn-success" onclick="addBalance('passenger')">زیادکردن ✓</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">مێژووی گشتی باڵانس</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadBalanceHistory()">🔄 نوێکردنەوە</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ناو</th><th>مۆبایل</th><th>جۆر</th><th>بڕ</th><th>تێبینی</th><th>کات</th></tr></thead>
+          <tbody id="balanceHistory"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">مێژوو نییە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div id="pricing" class="section">
+    <div class="page-header">
+      <div class="page-title">🏷️ نرخی هێڵەکان</div>
+      <div class="page-sub">کاتێک شۆفێر گەشت قبوڵ دەکات — ئۆتۆماتیکی لە باڵانسی سەرنیشین دەبڕدرێت</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">دانانی نرخ بۆ هەر هێڵێک</div></div>
+      <div class="info-box">
+        ℹ️ نرخی هەر هێڵێک بنووسە و خەزن بکە.<br>
+        کاتێک شۆفێر داواکاریەکی قبوڵ دەکات، ئۆتۆماتیکی ئەم بڕە لە باڵانسی سەرنیشین دەبڕدرێت.
+      </div>
+      <div class="price-grid" id="priceGrid"></div>
+      <div class="save-row">
+        <button class="btn btn-primary" onclick="savePrices()">💾 خەزنکردنی نرخەکان</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">نرخی ئێستای هێڵەکان</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>هێڵ</th><th>نرخ (IQD)</th></tr></thead>
+          <tbody id="priceTableBody"><tr><td colspan="2" style="text-align:center;color:var(--muted);padding:30px">هیچ نرخێک دانەنراوە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div id="reports" class="section">
+    <div class="page-header"><div class="page-title">📋 ڕاپۆرتەکان</div></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">ڕاپۆرتی سەرنیشینەکان</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadReports()">🔄 نوێکردنەوە</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ناو</th><th>مۆبایل</th><th>بەرواری تۆمار</th><th>گەشتەکان</th><th>باڵانس</th></tr></thead>
+          <tbody id="passengerReportTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">کرتەی نوێکردنەوە بکە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">ڕاپۆرتی شۆفێرەکان</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ناو</th><th>هێڵ</th><th>کۆی گەشت</th><th>باڵانس</th></tr></thead>
+          <tbody id="driverReportTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">زانیاری نییە</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, increment, collection, query, where, onSnapshot } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, getDoc,
+  doc, updateDoc, deleteDoc, increment,
+  query, where, serverTimestamp, orderBy, setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyD3gM3NTJPWz_Gr2Y7RuGNVRNOabyMtPKQ",
-        authDomain: "booking-3170f.firebaseapp.com",
-        projectId: "booking-3170f",
-        storageBucket: "booking-3170f.firebasestorage.app",
-        messagingSenderId: "203735208883",
-        appId: "1:203735208883:web:a41f37d48f37c79610b1c6"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyD3gM3NTJPWz_Gr2Y7RuGNVRNOabyMtPKQ",
+  authDomain: "booking-3170f.firebaseapp.com",
+  projectId: "booking-3170f",
+  storageBucket: "booking-3170f.firebasestorage.app",
+  messagingSenderId: "203735208883",
+  appId: "1:203735208883:web:a41f37d48f37c79610b1c6",
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const ROUTES = ['بغداد','هەولێر','کەرکووک','ڕانیە','قەڵادزێ','چەمچەماڵ','دووز','کۆیە'];
+let currentPrices = {};
 
-    let currentDriver = null;
+// ── Toast ──────────────────────────────────────────────
+function toast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#10b981' : '#ef4444';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
 
-    // کردارەکانی لۆگین
-    window.login = async () => {
-        const phone = document.getElementById('loginPhone').value;
-        const pass = document.getElementById('loginPass').value;
+// ── Navigation ─────────────────────────────────────────
+window.showSection = function(id, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  const loaders = {
+    dashboard: loadDashboard,
+    drivers:   loadDrivers,
+    passengers:loadPassengers,
+    balance:   loadBalanceHistory,
+    pricing:   loadPricing,
+    reports:   loadReports,
+  };
+  loaders[id]?.();
+}
 
-        const docRef = doc(db, "Users", phone);
-        const docSnap = await getDoc(docRef);
+// ── Dashboard ──────────────────────────────────────────
+async function loadDashboard() {
+  const [dSnap, pSnap, bSnap] = await Promise.all([
+    getDocs(collection(db,'drivers')),
+    getDocs(collection(db,'passengers')),
+    getDocs(collection(db,'bookings')),
+  ]);
+  document.getElementById('totalDrivers').textContent   = dSnap.size;
+  document.getElementById('totalPassengers').textContent= pSnap.size;
+  document.getElementById('totalTrips').textContent     = bSnap.size;
+  let pending=0, rows=[];
+  bSnap.forEach(d=>{
+    const b=d.data();
+    if(b.status==='pending') pending++;
+    const dt=b.createdAt?.toDate?b.createdAt.toDate().toLocaleString('ar-IQ'):'-';
+    const badge=b.status==='pending'?'<span class="badge badge-yellow">چاوەڕوان</span>':b.status==='accepted'?'<span class="badge badge-green">قبوڵکرا</span>':'<span class="badge badge-red">ڕەتکرایەوە</span>';
+    rows.push(`<tr><td>${b.passengerName||'-'}</td><td>${b.from||'-'}</td><td>${b.to||'-'}</td><td>${dt}</td><td>${badge}</td></tr>`);
+  });
+  document.getElementById('pendingBookings').textContent=pending;
+  document.getElementById('recentBookingsTable').innerHTML=rows.length?rows.slice(0,10).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">زانیاری نییە</td></tr>';
+}
 
-        if (docSnap.exists() && docSnap.data().password === pass && docSnap.data().role === 'driver') {
-            currentDriver = docSnap.data();
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-            setupUI();
-            listenForOrders();
-        } else {
-            alert("زانیارییەکان هەڵەن یان ئەکاونتەکە شۆفێر نییە");
-        }
-    };
+// ── Drivers ────────────────────────────────────────────
+window.addDriver = async function() {
+  const name  = document.getElementById('driverName').value.trim();
+  const phone = document.getElementById('driverPhone').value.trim();
+  const pass  = document.getElementById('driverPass').value.trim();
+  const route = document.getElementById('driverRoute').value;
+  if(!name||!phone||!pass||!route) return toast('تکایە هەموو خانەکان پڕ بکەوە',false);
+  const dup = await getDocs(query(collection(db,'drivers'),where('phone','==',phone)));
+  if(!dup.empty) return toast('ئەم ژمارە پێشتر تۆمارکراوە',false);
+  await addDoc(collection(db,'drivers'),{name,phone,password:pass,route,balance:0,trips:0,createdAt:serverTimestamp()});
+  toast('شۆفێر زیادکرا ✓');
+  ['driverName','driverPhone','driverPass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('driverRoute').value='';
+  loadDrivers();
+}
 
-    function setupUI() {
-        document.getElementById('driverName').innerText = currentDriver.name;
-        document.getElementById('driverRoute').innerText = "هێڵی: " + currentDriver.route;
-        document.getElementById('driverBalance').innerText = currentDriver.balance + " د.ع";
-    }
+async function loadDrivers() {
+  const snap=await getDocs(collection(db,'drivers'));
+  let html='';
+  snap.forEach(d=>{
+    const dr=d.data();
+    html+=`<tr>
+      <td><strong>${dr.name}</strong></td>
+      <td>${dr.phone}</td>
+      <td><span class="badge badge-info">${dr.route||'-'}</span></td>
+      <td>${dr.trips||0}</td>
+      <td>${(dr.balance||0).toLocaleString()} IQD</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDriver('${d.id}')">سڕینەوە</button></td>
+    </tr>`;
+  });
+  document.getElementById('driversTable').innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">هیچ شۆفێرێک نییە</td></tr>';
+}
 
-    // گوێگرتن لە داواکارییەکان بەپێی هێڵ و بەروار
-    function listenForOrders() {
-        const today = new Date().toISOString().split('T')[0];
-        const q = query(
-            collection(db, "Requests", today, "Orders"),
-            where("route", "==", currentDriver.route),
-            where("status", "==", "pending")
-        );
+window.deleteDriver=async function(id){
+  if(!confirm('دڵنیایت لە سڕینەوەی ئەم شۆفێرە؟')) return;
+  await deleteDoc(doc(db,'drivers',id));
+  toast('شۆفێر سڕایەوە');
+  loadDrivers();
+}
 
-        onSnapshot(q, (snapshot) => {
-            const list = document.getElementById('ordersList');
-            list.innerHTML = "";
-            
-            if(snapshot.empty) {
-                list.innerHTML = "<p class='text-center text-gray-500'>هیچ داواکارییەک نییە</p>";
-            }
+// ── Passengers ─────────────────────────────────────────
+async function loadPassengers() {
+  const snap=await getDocs(collection(db,'passengers'));
+  let html='';
+  snap.forEach(d=>{
+    const p=d.data();
+    const dt=p.createdAt?.toDate?p.createdAt.toDate().toLocaleDateString('ar-IQ'):'-';
+    html+=`<tr><td>${p.name}</td><td>${p.phone}</td><td>${dt}</td><td>${p.trips||0}</td><td>${(p.balance||0).toLocaleString()} IQD</td></tr>`;
+  });
+  document.getElementById('passengersTable').innerHTML=html||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">هیچ سەرنیشینێک نییە</td></tr>';
+}
 
-            snapshot.forEach((orderDoc) => {
-                const order = orderDoc.data();
-                const orderId = orderDoc.id;
+// ── Balance ────────────────────────────────────────────
+window.addBalance = async function(type) {
+  const phoneId  = type==='driver'?'balPhone':'balPhoneP';
+  const amountId = type==='driver'?'balAmount':'balAmountP';
+  const phone    = document.getElementById(phoneId).value.trim();
+  const amount   = parseInt(document.getElementById(amountId).value)||0;
 
-                list.innerHTML += `
-                    <div class="bg-white p-4 rounded-lg shadow border-r-4 border-blue-600">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="bg-gray-100 px-2 py-1 rounded text-sm">${order.time}</span>
-                            <span class="font-bold text-blue-700">${order.route}</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="acceptOrder('${orderId}')" class="flex-1 bg-green-600 text-white py-2 rounded">قبوڵکردن</button>
-                            <button class="bg-gray-200 px-4 py-2 rounded text-sm text-gray-600">پاشگوێخستن</button>
-                        </div>
-                        <div id="details-${orderId}" class="mt-3 p-2 bg-yellow-50 rounded hidden border border-yellow-200">
-                            <p class="text-sm">📱 مۆبایل: <a href="tel:${order.passengerPhone}" class="text-blue-600 font-bold underline">${order.passengerPhone}</a></p>
-                            <p class="text-sm mt-1">📍 لۆکەیشن: <a href="${order.location}" target="_blank" class="text-red-600 underline">بینین لەسەر نەخشە</a></p>
-                        </div>
-                    </div>
-                `;
-            });
-        });
-    }
+  if(!phone)       return toast('ژمارەی مۆبایل بنووسە',false);
+  if(amount<=0)    return toast('بڕی باڵانس دروست بنووسە',false);
 
-    // قبوڵکردنی داواکاری و بڕینی پارە
-    window.acceptOrder = async (orderId) => {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // وەرگرتنی نرخی هێڵەکە لە Settings
-        const settingsSnap = await getDoc(doc(db, "Settings", currentDriver.route));
-        const dPrice = settingsSnap.exists() ? parseFloat(settingsSnap.data().driverPrice) : 2000;
+  const colName = type==='driver'?'drivers':'passengers';
+  const snap = await getDocs(query(collection(db,colName),where('phone','==',phone)));
+  if(snap.empty) return toast('ئەم ژمارە نەدۆزرایەوە',false);
 
-        if (currentDriver.balance < dPrice) {
-            return alert("باڵنست تەواو نییە، تکایە سەرەتا باراوی بکە");
-        }
+  const userDoc  = snap.docs[0];
+  const userName = userDoc.data().name||'-';
 
-        const tripRef = doc(db, "Requests", today, "Orders", orderId);
-        const driverRef = doc(db, "Users", currentDriver.phone);
+  // ✅ Update balance
+  await updateDoc(userDoc.ref,{balance:increment(amount)});
 
-        try {
-            await updateDoc(tripRef, { status: "accepted", driverId: currentDriver.phone });
-            await updateDoc(driverRef, { 
-                balance: increment(-dPrice),
-                tripsCount: increment(1) 
-            });
+  // ✅ Log it
+  await addDoc(collection(db,'balanceLogs'),{
+    phone, name:userName, type, amount,
+    note:'زیادکرا لەلایەن ئەدمین',
+    createdAt:serverTimestamp()
+  });
 
-            // نیشاندانی زانیارییەکانی سەرنیشین تەنها بۆ ئەم شۆفێرە
-            document.getElementById(`details-${orderId}`).classList.remove('hidden');
-            
-            // نوێکردنەوەی باڵنس لەسەر شاشە
-            currentDriver.balance -= dPrice;
-            document.getElementById('driverBalance').innerText = currentDriver.balance + " د.ع";
+  toast(`${userName} — ${amount.toLocaleString()} IQD زیادکرا ✓`);
+  document.getElementById(phoneId).value='';
+  document.getElementById(amountId).value='';
+  loadBalanceHistory();
+}
 
-            alert("گەشتەکە قبوڵکرا و بڕی " + dPrice + " لە باڵنست بڕدرا");
-        } catch (e) {
-            alert("هەڵەیەک ڕوویدا یان گەشتەکە پێشتر قبوڵکراوە");
-        }
-    };
+async function loadBalanceHistory() {
+  try {
+    const snap=await getDocs(query(collection(db,'balanceLogs'),orderBy('createdAt','desc')));
+    let html='';
+    snap.forEach(d=>{
+      const b=d.data();
+      const dt=b.createdAt?.toDate?b.createdAt.toDate().toLocaleString('ar-IQ'):'-';
+      const typeLabel=b.type==='driver'?'<span class="badge badge-yellow">شۆفێر</span>':'<span class="badge badge-green">سەرنیشین</span>';
+      const color=b.amount<0?'color:var(--danger)':'color:var(--accent2)';
+      html+=`<tr>
+        <td>${b.name||'-'}</td><td>${b.phone}</td>
+        <td>${typeLabel}</td>
+        <td style="${color}">${b.amount>0?'+':''}${b.amount.toLocaleString()} IQD</td>
+        <td style="color:var(--muted);font-size:13px">${b.note||'-'}</td>
+        <td>${dt}</td>
+      </tr>`;
+    });
+    document.getElementById('balanceHistory').innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">مێژوو نییە</td></tr>';
+  } catch(e) {
+    document.getElementById('balanceHistory').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">مێژوو نییە</td></tr>';
+  }
+}
 
-    // تۆمارکردنی Service Worker بۆ PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
-    }
+// ── Pricing ────────────────────────────────────────────
+async function loadPricing() {
+  try {
+    const ref=doc(db,'settings','routePrices');
+    const snap=await getDoc(ref);
+    currentPrices=snap.exists()?snap.data():{};
+  } catch(e){ currentPrices={}; }
+
+  document.getElementById('priceGrid').innerHTML=ROUTES.map(r=>`
+    <div class="price-item">
+      <div style="font-size:12px;color:var(--muted)">هێڵ</div>
+      <div class="price-route">🚖 ${r}</div>
+      <div style="font-size:12px;color:var(--muted)">نرخ (IQD)</div>
+      <input type="number" id="price_${r}" placeholder="0" min="0"
+             value="${currentPrices[r]||''}">
+    </div>
+  `).join('');
+
+  renderPriceTable();
+}
+
+function renderPriceTable() {
+  const rows=ROUTES.map(r=>{
+    const price=currentPrices[r];
+    return `<tr>
+      <td><span class="badge badge-info">${r}</span></td>
+      <td>${price?price.toLocaleString()+' IQD':'<span style="color:var(--muted)">دانەنراوە</span>'}</td>
+    </tr>`;
+  });
+  document.getElementById('priceTableBody').innerHTML=rows.join('');
+}
+
+window.savePrices = async function() {
+  const prices={};
+  ROUTES.forEach(r=>{
+    const val=parseInt(document.getElementById('price_'+r)?.value||'0');
+    if(val>0) prices[r]=val;
+  });
+  await setDoc(doc(db,'settings','routePrices'),prices);
+  currentPrices=prices;
+  renderPriceTable();
+  toast('نرخەکان خەزنکران ✓');
+}
+
+// ── Reports ────────────────────────────────────────────
+window.loadReports = async function() {
+  const [pSnap,dSnap]=await Promise.all([
+    getDocs(collection(db,'passengers')),
+    getDocs(collection(db,'drivers')),
+  ]);
+  let pHtml='';
+  pSnap.forEach(d=>{
+    const p=d.data();
+    const dt=p.createdAt?.toDate?p.createdAt.toDate().toLocaleDateString('ar-IQ'):'-';
+    pHtml+=`<tr><td>${p.name}</td><td>${p.phone}</td><td>${dt}</td><td>${p.trips||0}</td><td>${(p.balance||0).toLocaleString()} IQD</td></tr>`;
+  });
+  document.getElementById('passengerReportTable').innerHTML=pHtml||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">هیچ سەرنیشینێک نییە</td></tr>';
+
+  let dHtml='';
+  dSnap.forEach(d=>{
+    const dr=d.data();
+    dHtml+=`<tr><td>${dr.name}</td><td><span class="badge badge-info">${dr.route||'-'}</span></td><td>${dr.trips||0}</td><td>${(dr.balance||0).toLocaleString()} IQD</td></tr>`;
+  });
+  document.getElementById('driverReportTable').innerHTML=dHtml||'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">زانیاری نییە</td></tr>';
+}
+
+// ── Init ───────────────────────────────────────────────
+loadDashboard();
+loadBalanceHistory();
 </script>
 </body>
 </html>
